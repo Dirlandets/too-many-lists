@@ -1,26 +1,60 @@
+type Link<T> = Option<Box<Node<T>>>;
+
 pub struct List<T> {
     head: Link<T>,
 }
-
-type Link<T> = Option<Box<Node<T>>>;
 
 struct Node<T> {
     value: T,
     next: Link<T>,
 }
 
-pub struct ListIter<T>(List<T>);
+pub struct ListIntoIter<T>(List<T>);
+pub struct ListIter<'a, T> {
+    next: Option<&'a Node<T>>,
+}
+pub struct ListIterMut<'a, T> {
+    next: Option<&'a mut Node<T>>,
+}
 
 impl<T> List<T> {
-    pub fn into_iter(self) -> ListIter<T> {
-        ListIter(self)
+    pub fn into_iter(self) -> ListIntoIter<T> {
+        ListIntoIter(self)
+    }
+    pub fn iter<'a>(&'a self) -> ListIter<'a, T> {
+        ListIter {
+            next: self.head.as_deref(),
+        }
+    }
+    pub fn iter_mut<'a>(&'a mut self) -> ListIterMut<'a, T> {
+        ListIterMut {
+            next: self.head.as_deref_mut(),
+        }
     }
 }
 
-impl<T> Iterator for ListIter<T> {
+impl<T> Iterator for ListIntoIter<T> {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
         self.0.pop()
+    }
+}
+impl<'a, T> Iterator for ListIter<'a, T> {
+    type Item = &'a T;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.next.take().map(|node| {
+            self.next = node.next.as_deref();
+            &node.value
+        })
+    }
+}
+impl<'a, T> Iterator for ListIterMut<'a, T> {
+    type Item = &'a mut T;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.next.take().map(|node| {
+            self.next = node.next.as_deref_mut();
+            &mut node.value
+        })
     }
 }
 
@@ -112,5 +146,31 @@ mod tests {
         assert_eq!(iter.next(), Some(2));
         assert_eq!(iter.next(), Some(1));
         assert_eq!(iter.next(), None);
+    }
+    #[test]
+    fn iter() {
+        let mut list = List::new();
+        list.push(1);
+        list.push(2);
+        list.push(3);
+
+        let mut iter = list.iter();
+        assert_eq!(iter.next(), Some(&3));
+        assert_eq!(iter.next(), Some(&2));
+        assert_eq!(iter.next(), Some(&1));
+        iter.for_each(|val| println!("{}", val));
+    }
+    #[test]
+    fn iter_mut() {
+        let mut list = List::new();
+        list.push(1);
+        list.push(2);
+        list.push(3);
+
+        let mut iter = list.iter_mut();
+        assert_eq!(iter.next(), Some(&mut 3));
+        assert_eq!(iter.next(), Some(&mut 2));
+        assert_eq!(iter.next(), Some(&mut 1));
+        iter.for_each(|val| println!("{}", val));
     }
 }

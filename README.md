@@ -3,12 +3,18 @@
 [Link](https://rust-unofficial.github.io/too-many-lists/index.html)
 
 
-- [x] Bas Stack (intro)
-- [ ] An Ok Stack
+- [x] Base Stack (intro)
+- [x] An Ok Stack
   - [x] Option
   - [x] Generic
   - [x] Peek
   - [x] IntoIter
-  - [ ] Iter
-  - [ ] IterMut
+  - [x] Iter
+  - [x] IterMut
+  - [x] Final Code
+- [ ] A Persisstent Stack
+  - [ ] Layout
+  - [ ] Basics
+  - [ ] Drop
+  - [ ] Arc
   - [ ] Final Code
